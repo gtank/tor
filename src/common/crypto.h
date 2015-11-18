@@ -217,6 +217,7 @@ int crypto_digest256(char *digest, const char *m, size_t len,
                      digest_algorithm_t algorithm);
 int crypto_digest512(char *digest, const char *m, size_t len,
                      digest_algorithm_t algorithm);
+int crypto_digest_local(char *digest, const char *m, size_t len);
 int crypto_digest_all(digests_t *ds_out, const char *m, size_t len);
 struct smartlist_t;
 void crypto_digest_smartlist_prefix(char *digest_out, size_t len_out,

@@ -1622,6 +1622,29 @@ crypto_digest512(char *digest, const char *m, size_t len,
   return (SHA512((const unsigned char*)m,len,(unsigned char*)digest) == NULL);
 }
 
+/** Compute the platform-optimized SHA2 digest of the <b>len</b> bytes on data
+ * stored in <b>m</b>.  Write DIGEST_LEN bytes of the result into
+ * <b>digest</b>.  Return 0 on success, -1 on failure.
+ */
+int
+crypto_digest_local(char *digest, const char *m, size_t len)
+{
+  crypto_digest_t *d;
+
+  tor_assert(m);
+  tor_assert(digest);
+
+#if SIZEOF_VOID_P >= 8
+  d = crypto_digest512_new(DIGEST_SHA512);
+#else
+  d = crypto_digest256_new(DIGEST_SHA256);
+#endif
+  crypto_digest_add_bytes(d, m, len);
+  crypto_digest_get_digest(d, digest, DIGEST_LEN);
+  crypto_digest_free(d);
+  return 0;
+}
+
 /** Set the digests_t in <b>ds_out</b> to contain every digest on the
  * <b>len</b> bytes in <b>m</b> that we know how to compute.  Return 0 on
  * success, -1 on failure. */
