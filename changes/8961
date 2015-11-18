@@ -1,0 +1,2 @@
+  o Minor enhancement:
+    - The replay cache now uses truncated SHA2 instead of SHA1. Fixes #8961.
