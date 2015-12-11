@@ -7195,6 +7195,32 @@ getinfo_helper_config(control_connection_t *conn,
       }
     }
 
+    const smartlist_t *trusted_servers = router_get_trusted_dir_servers();
+    const smartlist_t *fallback_servers = router_get_fallback_dir_servers();
+
+    if (smartlist_len(fallback_servers) > 0) {
+      char hexdigest[HEX_DIGEST_LEN+1];
+
+      SMARTLIST_FOREACH_BEGIN(fallback_servers, dir_server_t *, fallback) {
+        // The dirauths should be in the list, but don't show them twice.
+        if (!smartlist_contains(trusted_servers, fallback)) {
+          char *line = NULL;
+          char *escaped_line = NULL;
+
+          base16_encode(hexdigest, sizeof(hexdigest), fallback->digest,
+                        DIGEST_LEN);
+          tor_asprintf(&line, "orport=%d %s %s:%d", fallback->or_port,
+                       hexdigest, fallback->address, fallback->dir_port);
+          escaped_line = esc_for_log(line);
+          smartlist_add_asprintf(sl, "FallbackDir %s\n", escaped_line);
+
+          tor_free(escaped_line);
+          tor_free(line);
+        }
+      } SMARTLIST_FOREACH_END(fallback);
+      memset(hexdigest, 0, HEX_DIGEST_LEN);
+    }
+
     *answer = smartlist_join_strings(sl, "", 0, NULL);
     SMARTLIST_FOREACH(sl, char *, c, tor_free(c));
     smartlist_free(sl);
